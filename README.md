@@ -11,6 +11,7 @@ And we use the face landmark to detect the 4 of driving behaviors, including **y
 The 68-Dlib's point model can be download from [here](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2).
 
 ## Preparing
+Extract the dlib and model, and place them in to DMS_v1.
 
 Structure of this project should be：
 ```
