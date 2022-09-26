@@ -28,21 +28,21 @@ You can download the 68-Dlib's point model from [here](https://github.com/davisk
 ```
 
 ## Compile
-    $ mkdir build && cd build && cmake .. && make
+    $ mkdir build && cd build && cmake .. && make -j4
 
 ## Getting Started:
 ### Usage
 * detect from image
 ```bash
-$ ofld --pic /path/to/image
+$ ./ofld --pic /path/to/image
 ```
 * detect from video
 ```bash
-$ ofld --video /path/to/video
+$ ./ofld --video /path/to/video
 ```
 * detect from webcam
 ```bash
-$ ofld --cam
+$ ./ofld --cam
 ```
 
 # Reference
