@@ -16,9 +16,10 @@ You can download dlib from [here](http://dlib.net/).
 You can download the 68-Dlib's point model from [here](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2).
 
 ## Preparing
-Extract the dlib and model, and place them in to DMS_v1.
+1. You can download **dlib** from [here](http://dlib.net/), and **68-Dlib's point model** from [here](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2).
 
-Structure of this project should be：
+2. Extract the dlib and model, and place them in to DMS_v1. 
+3. Structure of this project should be：
 ```
 ├─ DMS_v1
      ├─ src
