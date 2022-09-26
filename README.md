@@ -5,7 +5,9 @@ This project is edit from [opencv-facial-landmark-detection](https://learnopencv
 And we use the face landmark to detect the 4 of driving behaviors, including **yawn**, **distraction**, **lower head**, and **closing eyes**.
 
 ## Requirements
-[dlib](http://dlib.net/) 19.24
+[dlib](http://dlib.net/)  == 19.24
+
+opencv >= 3.4.14
 
 ## Model
 You can download the 68-Dlib's point model from [here](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2).
