@@ -28,15 +28,15 @@ Structure of this project should be：
 
 ## Getting Started:
 ### Usage
-* detect image
+* detect from image
 ```bash
 $ ofld --pic /path/to/image
 ```
-* detect video
+* detect from video
 ```bash
 $ ofld --video /path/to/video
 ```
-* real-time detect 
+* detect from webcam
 ```bash
 $ ofld --cam
 ```
