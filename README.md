@@ -51,3 +51,7 @@ $ ./ofld --cam
 [2] Tutorial 2：<https://github.com/spmallick/learnopencv/tree/master/FacialLandmarkDetection>
 
 [3] Yawn Detection：<https://github.com/deveshdatwani/facial-expression-recognition>
+
+[4] Drowsiness detection：<https://pyimagesearch.com/2017/05/08/drowsiness-detection-opencv/>
+
+[5] Real-Time Eye Blink Detection using Facial Landmarks：<http://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf>
