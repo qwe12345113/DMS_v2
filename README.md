@@ -27,15 +27,15 @@ We use the face landmarks to detect the 4 of driving behaviors, including **yawn
 
 ## Getting Started:
 ### Usage
-* detect from image
+* detect from image.
 ```bash
 $ ./ofld --pic /path/to/image
 ```
-* detect from video
+* detect from video.
 ```bash
 $ ./ofld --video /path/to/video
 ```
-* detect from webcam
+* detect from webcam.
 ```bash
 $ ./ofld --cam
 ```
