@@ -19,8 +19,6 @@ using namespace cv::face;
 int main(int argc, char **argv)
 {
   CascadeClassifier faceDetector("haarcascade_frontalface_alt2.xml");
-  Ptr<Facemark> facemark = FacemarkLBF::create();
-  facemark->loadModel("lbfmodel.yaml");
 
   string command = argv[1];
 
