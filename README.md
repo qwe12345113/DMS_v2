@@ -47,7 +47,7 @@ https://user-images.githubusercontent.com/11375811/192212654-d54cafaa-fb20-4ba7-
 
 [2] Tutorial 2：<https://github.com/spmallick/learnopencv/tree/master/FacialLandmarkDetection>
 
-[3] Tutirial 3：<https://blog.csdn.net/u013841196/article/details/85041007>
+[3] Tutorial 3：<https://blog.csdn.net/u013841196/article/details/85041007>
 
 [4] Yawn Detection：<https://github.com/deveshdatwani/facial-expression-recognition>
 
