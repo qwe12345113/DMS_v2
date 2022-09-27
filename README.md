@@ -2,7 +2,7 @@
 ## Introdution
 This project is edit from [opencv-facial-landmark-detection](https://learnopencv.com/facemark-facial-landmark-detection-using-opencv/), but we change the **Facemark** model from opencv to dlib.
 
-And we use the face landmark to detect the 4 of driving behaviors, including **yawn**, **distraction**, **lower head**, and **closing eyes**.
+We use the face landmarks to detect the 4 of driving behaviors, including **yawn**, **distraction**, **lower head**, and **closing eyes**.
 
 ## Requirements
 - gcc >= 4.7
