@@ -10,11 +10,6 @@ And we use the face landmark to detect the 4 of driving behaviors, including **y
 - opencv >= 3.4.14
 - dlib == 19.24
 
-You can download dlib from [here](http://dlib.net/).
-
-## Model
-You can download the 68-Dlib's point model from [here](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2).
-
 ## Preparing
 1. You can download **dlib** from [here](http://dlib.net/), and **68-Dlib's point model** from [here](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2).
 
