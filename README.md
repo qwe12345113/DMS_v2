@@ -16,10 +16,10 @@ We use the face landmarks to detect the 4 of driving behaviors, including **yawn
 2. Extract the dlib and model, and place them in to DMS_v1. 
 3. Structure of this project should be：
 ```
-├─ DMS_v1
-     ├─ src
-     ├─ dlib-19.24
-     └─ shape_predictor_68_face_landmarks.dat
+DMS_v1
+  ├─ src
+  ├─ dlib-19.24
+  └─ shape_predictor_68_face_landmarks.dat
 ```
 
 ## Compile
