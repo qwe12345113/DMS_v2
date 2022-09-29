@@ -12,7 +12,7 @@ endif()
 
 find_package(OpenCV REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/dlib-19.24/dlib/ ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/dlib-19.24/dlib/)
 
 add_definitions(-O3 -Wall -Wextra)
 
