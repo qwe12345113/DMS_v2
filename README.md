@@ -1,4 +1,4 @@
-# DMS_v1
+# DMS_v2
 ## Introdution
 This project is edit from [opencv-facial-landmark-detection](https://learnopencv.com/facemark-facial-landmark-detection-using-opencv/), but we change the **Facemark** model from opencv to dlib.
 
