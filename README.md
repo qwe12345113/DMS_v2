@@ -48,8 +48,7 @@ $ ./dms name
 ```bash
 $ ./dms rec
 ```
-# Demo
-https://user-images.githubusercontent.com/11375811/192212654-d54cafaa-fb20-4ba7-aae6-e89cd07a4d1a.mp4
+
 
 # Reference
 [1] Tutorial 1：<https://www.learnopencv.com/facemark-facial-landmark-detection-using-opencv/>
