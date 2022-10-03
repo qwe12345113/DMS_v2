@@ -1,6 +1,6 @@
 # DMS_v2
 ## Introdution
-In this project, we add the face recognition function into DMS_v1, but only use in detecting from webcam.
+In this project, we add the face recognition function into DMS_v1.
 
 We use the face landmarks to detect the 4 of driving behaviors, including **yawn**, **distraction**, **lower head**, and **closing eyes**.
 
