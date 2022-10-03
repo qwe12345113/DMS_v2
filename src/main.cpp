@@ -221,7 +221,6 @@ void DMS_registor(string user_name, cv::VideoCapture cam, frontal_face_detector 
 {  
   cout << "registor" << endl;
   cv::Mat frame;
-  cv::Scalar color(0, 0, 255);
   std::vector<full_object_detection> shapes;
   Register usr_reg;
   cout << "Press Enter to save a photo to build database " << endl;
@@ -277,6 +276,64 @@ void DMS_registor(string user_name, cv::VideoCapture cam, frontal_face_detector 
   cv::destroyAllWindows();
 }
 
+void DMS_recognize(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
+{  
+  cv::Mat frame;
+  
+  std::vector<full_object_detection> shapes;
+  Register usr_reg;
+  cout << "Press Enter take a photo to recognize user " << endl;
+  
+  while (cam.read(frame))
+  {
+    // clock_t start = clock();
+    cv::resize(frame, frame, cv::Size(640, 360));
+
+    cv::Mat gray;
+    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+    // if the img is gray scale concat image
+    // three time to simulate the color image
+    if (frame.channels() == 1)
+      cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);
+
+    //------------ opencv format to dlib format ---------------//
+    array2d<rgb_pixel> img;
+    assign_image(img, cv_image<bgr_pixel>(frame));
+
+    //----- Number of faces detected -----//
+    std::vector<dlib::rectangle> dets = detector(img);
+
+    if (dets.size() == 1)
+    {
+      full_object_detection landmarks = sp(img, dets[0]); // get face landmark
+      shapes.push_back(landmarks);
+    }
+    else if(dets.size() == 0)
+      cout << "no face detected" << endl;
+    else
+      cout << "too many faces" << endl;
+    
+    cv::imshow("123", frame);
+    char key = cv::waitKey(1);
+
+    if (key == 13 && dets.size() == 1)
+    {
+      usr_reg.TakePhoto(dets[0], frame);
+      usr_reg.recognize_usr();
+      if (usr_reg.recognized)
+        break;
+    }
+
+    else if (key == 27)
+      break;
+    
+    shapes.clear();
+  }
+  cam.release();
+  cv::destroyAllWindows();
+}
+
 void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
 {
   cv::Mat frame;
@@ -291,7 +348,6 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
   cv::VideoWriter writer;
   writer.open("./demo.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 15.0, cv::Size(640, 360), true);
   EyeDetector Eye_det;
-  Register usr_reg;
 
   cout << "Press Enter to take a photo to recgonize driver" << endl;
 
@@ -323,15 +379,8 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
       eye_ear = eye_aspect_ratio(landmarks);
       mouth_ear = mouth_aspect_ratio(landmarks);
       shapes.push_back(landmarks);
-
-      ///-------do face recognition first---------/////
-      if (shapes.size() == 1 && !usr_reg.recognized && !usr_reg.start)
-      {
-        usr_reg.recgonize_usr();
-      }
-
       // start detect
-      else if (shapes.size() == 1 && usr_reg.recognized && !usr_reg.start)
+      if (shapes.size() == 1)
       {
         cout << "start to detect" << endl;
         if (find_normal_satus_OK)
@@ -340,7 +389,7 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
           //--------- detect close eye -------------//
           // cout << (eye_ear-threshold.at(0))/threshold.at(4) << endl;
           // cout << eye_ear << endl;
-          cout << Eye_det.get_EAR(gray, landmarks) << endl;
+          // cout << Eye_det.get_EAR(gray, landmarks) << endl;
           Eye_det.get_Gaze_Score(gray, landmarks);
           if (eye_ear < threshold.at(0))
           {
@@ -430,29 +479,15 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
         }
       }
     }
+    else if (dets.size() == 0)
+      cout << "no face" << endl;
 
     writer.write(frame);
     cv::imshow("123", frame);
     char key = cv::waitKey(1);
 
-    if (key == 13 && dets.size() == 1)
+    if (key == 27)
     {
-      if (usr_reg.start)
-      {
-        usr_reg.TakePhoto(dets[0], frame);
-        // usr_reg.dirExists(user_name);
-        usr_reg.dirExists("user_name");
-      }
-
-      else
-      {
-        usr_reg.registor(dets[0], frame);
-      }
-    }
-
-    else if (key == 27)
-    {
-
       break;
     }
     shapes.clear();
@@ -467,12 +502,9 @@ int main(int argc, char **argv)
   shape_predictor sp;
   deserialize("../Model/shape_predictor_68_face_landmarks.dat") >> sp;
 
-  string command = argv[1];
-  std::vector<full_object_detection> shapes;
-  
-  
   if (argc == 3)
   {
+    string command = argv[1];
     if (command == "pic") 
       DMS_pic(argv[2], detector, sp);
     
@@ -491,8 +523,8 @@ int main(int argc, char **argv)
   }
 
   else if (argc == 2)
-  {   
-    
+  {    
+    string command = argv[1];
     cv::VideoCapture cam;
     cam.open(0);
     if (!cam.isOpened())
@@ -500,20 +532,24 @@ int main(int argc, char **argv)
       cout << "Could not open video or camera source\n";
       return 1;
     }
-    DMS_registor(argv[1], cam, detector, sp);
+    if (command == "rec")
+      DMS_recognize(cam, detector, sp);
+    else
+      DMS_registor(argv[1], cam, detector, sp);
     // DMS_registor(detector, sp);
   }  
     
   
   else if (argc == 1)
-  {      
-      cv::VideoCapture cam(0);
-      if (!cam.isOpened())
-      {
-        cout << "Could not open video or camera source\n";
-        return 1;
-      }
-      DMS(cam, detector, sp);
+  {   
+    cout << "cam" << endl;
+    cv::VideoCapture cam(0);
+    if (!cam.isOpened())
+    {
+      cout << "Could not open video or camera source\n";
+      return 1;
+    }
+    DMS(cam, detector, sp);
   }  
 
   else
