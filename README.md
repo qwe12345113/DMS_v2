@@ -1,6 +1,6 @@
 # DMS_v2
 ## Introdution
-This project is edit from [opencv-facial-landmark-detection](https://learnopencv.com/facemark-facial-landmark-detection-using-opencv/), but we change the **Facemark** model from opencv to dlib.
+In this project, we add the face recognition function into DMS_v1, but only use in detecting from webcam.
 
 We use the face landmarks to detect the 4 of driving behaviors, including **yawn**, **distraction**, **lower head**, and **closing eyes**.
 
@@ -16,10 +16,11 @@ We use the face landmarks to detect the 4 of driving behaviors, including **yawn
 2. Extract the dlib and model, place them into DMS_v1. 
 3. Structure of this project should be：
 ```
-DMS_v1
+DMS_v2
   ├─ src
   ├─ dlib-19.24
-  └─ shape_predictor_68_face_landmarks.dat
+  └─ Model
+      └─ shape_predictor_68_face_landmarks.dat
 ```
 
 ## Compile
@@ -29,15 +30,15 @@ DMS_v1
 ### Usage
 * detect from image.
 ```bash
-$ ./ofld pic /path/to/image
+$ ./dms pic /path/to/image
 ```
 * detect from video.
 ```bash
-$ ./ofld video /path/to/video
+$ ./dms video /path/to/video
 ```
 * detect from webcam.
 ```bash
-$ ./ofld cam
+$ ./dms
 ```
 # Demo
 https://user-images.githubusercontent.com/11375811/192212654-d54cafaa-fb20-4ba7-aae6-e89cd07a4d1a.mp4
