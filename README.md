@@ -1,6 +1,8 @@
 # DMS_v2
 ## Introdution
-In this project, we add the face recognition function into [DMS_v1](https://github.com/qwe12345113/DMS_v1).
+We add the **registor** and **face recognition** function into [DMS_v1](https://github.com/qwe12345113/DMS_v1).
+
+In **registor** function, we need to collect 15 photos to build the user database. In **face recognition** function, take a photo then function will recognize the user.
 
 We use the face landmarks to detect the 4 of driving behaviors, including **yawn**, **distraction**, **lower head**, and **closing eyes**.
 
@@ -52,9 +54,9 @@ $ ./dms video /path/to/video
 ```bash
 $ ./dms
 ```
-* registor.
+* registor. press Enter to take photo.
 ```bash
-$ ./dms name
+$ ./dms user_name
 ```
 * face recognition.
 ```bash
