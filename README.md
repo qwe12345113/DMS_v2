@@ -54,11 +54,11 @@ $ ./dms video /path/to/video
 ```bash
 $ ./dms
 ```
-* registor. press Enter to take photo.
+* registor.(press Enter to take photos)
 ```bash
 $ ./dms user_name
 ```
-* face recognition.
+* face recognition.(press Enter to take a photo)
 ```bash
 $ ./dms rec
 ```
