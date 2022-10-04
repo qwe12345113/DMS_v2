@@ -1,14 +1,20 @@
 # DMS_v2
 ## Introdution
-In this project, we add the face recognition function into DMS_v1.
+In this project, we add the face recognition function into [DMS_v1](https://github.com/qwe12345113/DMS_v1).
 
 We use the face landmarks to detect the 4 of driving behaviors, including **yawn**, **distraction**, **lower head**, and **closing eyes**.
 
 ## Requirements
+### Dependencies
 - gcc >= 4.7
 - cmake >= 3.1
 - opencv >= 3.4.14
 - dlib == 19.24
+
+### It was tested and runs under the following OSs:
+- ubuntu 20.04
+
+Might work under others, but didn't get to test any other OSs just yet.
 
 ## Preparing
 1. Download [dlib](http://dlib.net/) and the following model：
