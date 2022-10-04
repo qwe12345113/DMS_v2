@@ -16,6 +16,7 @@ using namespace dlib;
 class EyeDetector
 {
 public:
+    
     full_object_detection keypoints;
     Mat frame;
     bool show_processing=false;
@@ -67,6 +68,7 @@ public:
     }
 
 private:
+    
     Mat get_ROI(int left_corner_keypoint_num)
     {
         
@@ -85,14 +87,15 @@ private:
         
         cv::Rect roi(min_x, min_y, max_x-min_x, max_y-min_y);
         cv::Mat eye_roi = frame(roi);
+        string s = "./" + to_string(left_corner_keypoint_num) + ".jpg";
+        cv::imwrite(s, eye_roi);
         return eye_roi;
     }
 
     float get_gaze(Mat &eye_roi)
-    {
-        
+    {        
         float gaze_score = 0;
-
+        cv::Scalar color(255, 255, 255);
         cv::Point eye_center((int)(eye_roi.cols / 2), (int)(eye_roi.rows / 2));
         // cv::bilateralFilter(eye_roi, eye_roi, 4, 40, 40);
 
@@ -104,10 +107,10 @@ private:
         {
             cv::Point pupil_position((int)circles.at(0)[0], (int)circles.at(0)[1]);
             if (show_processing){
-                cv::circle(eye_roi, pupil_position, circles.at(0)[2], (255, 255, 255), 1);
-                cv::circle(eye_roi, pupil_position, 1, (255, 255, 255), -1);
+                cv::circle(eye_roi, pupil_position, circles.at(0)[2], color, 1);
+                cv::circle(eye_roi, pupil_position, 1, color, -1);
                 
-                // cv::line(eye_roi, (eye_center[0], eye_center[1]), (pupil_position[0], pupil_position[1]), (255, 255, 255), 1);
+                // cv::line(eye_roi, (eye_center[0], eye_center[1]), (pupil_position[0], pupil_position[1]), color, 1);
             }
             gaze_score = LA_norm_cv(pupil_position, eye_center) / eye_center.x;
             return gaze_score;

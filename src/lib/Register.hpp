@@ -68,7 +68,7 @@ public:
         save = tmp_image_path + "0.jpg";
         cv::imwrite(save, face);
         start = false;
-        cout << "OK!" << endl;
+        cout << "OK! start to recognize user." << endl;
     }
 
     void registor(dlib::rectangle dets, cv::Mat frame)
@@ -102,22 +102,24 @@ public:
     {
         string tmp = tmp_image_path + "0.jpg";
         string usr_rec = checkFaceRecognition(tmp, "123");
-        string out = "Hellow " + usr_rec + "\n";
-        cout << out;
-        recognized = true;
-        // if (usr_rec == usr)
-        // {
-        //     string out = "Hellow " + usr_rec + "\n";
-        //     cout << out;
-        //     recognized = true;
-        // }
-        // else
-        // {
-        //     cout << "wrong" << usr_path << endl;
-        //     // int status = remove(usr_path.c_str());
-        //     rmFileLists(usr_path);
-        //     // cout << status << endl;
-        // }
+
+        if (usr_rec == "unknow")
+        {
+            string out = "You need to registor first.\n";
+            cout << out;            
+        }
+        else if (usr_rec == "no faces")
+        {
+            string out = "take a photo and recognize again.\n";
+            cout << out;            
+        }
+            
+        else
+        {
+            string out = "Hellow " + usr_rec + "\n";
+            cout << out;
+            recognized = true;
+        }
     }
 
 private:
@@ -137,7 +139,7 @@ private:
     void registor_or_not()
     {
         if (registered && n >= photo_amount_need){
-            cout << "user name exist, ready to recgonize." << endl;
+            cout << "user name exist." << endl;
             enough_photo = true;
         }
         else if (registered && n < photo_amount_need)
@@ -183,10 +185,10 @@ private:
         else
             top = dets.top() - 50;
 
-        if ((int)(left + dets.width() + 20) > img_col)
+        if ((int)(left + dets.width() + 30) > img_col)
             w = img_col - left;
         else
-            w = dets.width() + 20;
+            w = dets.width() + 30;
 
         if ((int)(top + dets.height() + 60) > img_row)
             h = img_row - top;
