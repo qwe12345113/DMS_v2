@@ -11,7 +11,8 @@ We use the face landmarks to detect the 4 of driving behaviors, including **yawn
 - dlib == 19.24
 
 ## Preparing
-1. You can download **dlib** from [here](http://dlib.net/), and **68-Dlib's point model** from [here](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2).
+1. You can download **dlib** from [here](http://dlib.net/).
+2. Download the following model [68-Dlib's point model](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2)、[5-Dlib's point model](https://github.com/davisking/dlib-models/blob/master/shape_predictor_5_face_landmarks.dat.bz2)、[face_recognition_resnet_model](https://github.com/davisking/dlib-models/blob/master/dlib_face_recognition_resnet_model_v1.dat.bz2)
 
 2. Extract the dlib and model, place them into DMS_v2. 
 3. Structure of this project should be：
@@ -20,7 +21,9 @@ DMS_v2
   ├─ src
   ├─ dlib-19.24
   └─ Model
-      └─ shape_predictor_68_face_landmarks.dat
+      ├─ shape_predictor_68_face_landmarks.dat
+      ├─ shape_predictor_5_face_landmarks.dat
+      └─ dlib_face_recognition_resnet_model_v1.dat
 ```
 
 ## Compile
