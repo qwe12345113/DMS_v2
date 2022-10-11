@@ -3,7 +3,6 @@
 #include <dlib/image_processing.h>
 #include <dlib/opencv/cv_image.h>
 #include <dlib/opencv.h>
-#include <dlib/gui_widgets.h>
 #include <dlib/image_io.h>
 #include <bits/stdc++.h>
 #include <iostream>
