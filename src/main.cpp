@@ -14,7 +14,10 @@
 #include "lib/drawLandmarks.hpp"
 #include "lib/utils_math.hpp"
 #include "lib/Eye_Dector_Module.hpp"
+#include "lib/Yawn_Dector_Module.hpp"
+#include "lib/Pose_Estimation_Module.hpp"
 #include "lib/Register.hpp"
+#include "lib/Attention_Scorer_Module.hpp"
 
 using namespace dlib;
 using namespace std;
@@ -340,7 +343,7 @@ void DMS_recognize(cv::VideoCapture cam, frontal_face_detector detector, shape_p
   cv::destroyAllWindows();
 }
 
-void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
+void DMS_old(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
 {
   cv::Mat frame;
   cv::Scalar color(0, 0, 255);
@@ -388,7 +391,6 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
       // start detect
       if (shapes.size() == 1)
       {
-        cout << "start to detect" << endl;
         if (find_normal_satus_OK)
         {
 
@@ -396,7 +398,7 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
           // cout << (eye_ear-threshold.at(0))/threshold.at(4) << endl;
           // cout << eye_ear << endl;
           // cout << Eye_det.get_EAR(gray, landmarks) << endl;
-          Eye_det.get_Gaze_Score(gray, landmarks);
+          
           if (eye_ear < threshold.at(0))
           {
             colse_eye_frame++;
@@ -502,6 +504,144 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
   cv::destroyAllWindows();
 }
 
+
+void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
+{
+  cv::Mat frame;
+  cv::Scalar color(0, 0, 255);
+
+  int lag = 0, fps_lim = 11;
+  float avg_pitch = 0;
+  // float time_lim = 1. / fps_lim ;
+  bool find_normal_satus_OK = 0, record=false, show_detail=true;
+
+  std::vector<full_object_detection> shapes, tmp_shapes;
+  std::vector<float> threshold;
+
+  cv::VideoWriter writer;
+  if(record)  
+    writer.open("./demo.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 15.0, cv::Size(640, 360), true);
+  
+  EyeDetector Eye_det;
+  HeadPoseEstimator Head_pose;
+  YawnDetector yawn_det;
+  AttentionScorer Scorer;
+  // Scorer.init(fps_lim, 0.26, 2, 0.2, 2, 35, 28, 2.5);
+  
+  string out="";
+  float ear=0, m_ear=0, gaze=0;
+
+  while (cam.read(frame))
+  {
+    cv::resize(frame, frame, cv::Size(640, 360));
+
+    cv::Mat gray;
+    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+    // if the img is gray scale concat image
+    // three time to simulate the color image
+    if (frame.channels() == 1)
+      cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);
+
+    //------------ opencv format to dlib format ---------------//
+    array2d<rgb_pixel> img;
+    assign_image(img, cv_image<bgr_pixel>(frame));
+
+    //----- Number of faces detected -----//
+    std::vector<dlib::rectangle> dets = detector(img);
+
+    if (dets.size() == 1)
+    {
+      full_object_detection landmarks = sp(img, dets[0]); // get face landmark
+      
+      shapes.push_back(landmarks);
+      // start detect
+      if (shapes.size() == 1)
+      {
+        if (find_normal_satus_OK)
+        {
+          ear = Eye_det.get_EAR(frame, landmarks);
+          Scorer.get_PERCLOS(ear); // get the tired and perclos_score
+
+          m_ear = yawn_det.get_EAR(frame, landmarks); // get mouth EAR
+
+          Head_pose.get_pose(frame, landmarks); // frame, roll, pitch, yaw
+
+          if(show_detail){
+            out = "EAR: " + to_string(ear);
+            cv::putText(frame, out, Point(10, 50), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255,0,0), 1);
+
+            out = "Gaze Score: " + to_string(gaze);
+            cv::putText(frame, out, Point(10, 80), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255,0,0), 1);
+
+            out = "PERCLOS: " + to_string(Scorer.perclos_score);
+            cv::putText(frame, out, Point(10, 110), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255,0,0), 1);
+
+            out = "MEAR: " + to_string(m_ear);
+            cv::putText(frame, out, Point(10, 130), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255,0,0), 1);
+          }
+
+          Scorer.eval_scores(ear, m_ear, Head_pose.pitch, Head_pose.yaw, shapes.at(0).part(30).y());
+
+          if(Scorer.is_tired)
+            cv::putText(frame, "Tired !", Point(10, 280), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+          if(Scorer.is_asleep)
+            cv::putText(frame, "CLOSE EYES !", Point(10, 300), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+          if(Scorer.is_yawn)
+            cv::putText(frame, "YAWN !", Point(10, 320), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+          // if(Scorer.is_looking_away)
+          //   cv::putText(frame, "LOOKING AWAY!", Point(400, 300), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+          if(Scorer.is_lower_head)
+            cv::putText(frame, "LOWER HEAD !", Point(400, 300), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+          if(Scorer.is_distracted)
+            cv::putText(frame, "DISTRACTED !", Point(400, 320), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+
+        }
+        else
+        {
+          cout << "normal status calculating" << endl;
+          if (lag > LAG)
+          {
+            threshold = threshold_calculate(tmp_shapes);
+            avg_pitch = avg_pitch / lag;
+            cout << avg_pitch << endl;
+            cout << "calculate finish" << endl;
+            find_normal_satus_OK = true;
+            tmp_shapes.clear();
+            Scorer.init(fps_lim, threshold.at(0), 3, 0.2, 3, 27, 0.1, 2.5, threshold.at(1), 2, 1.5, threshold.at(3), avg_pitch);
+            Head_pose.pitch = 0; // init pitch
+          }
+          else
+          {
+            tmp_shapes.push_back(shapes.at(0));
+            Head_pose.get_pose(frame, landmarks);
+            avg_pitch = avg_pitch + abs(Head_pose.pitch);
+            lag++;
+          }
+        }
+      }
+    }
+    else if (dets.size() == 0){
+      // cout << "no face" << endl;
+      cv::putText(frame, "No Face!", Point(200, 320), FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0,0,255), 2);
+    }
+
+    if(record)
+      writer.write(frame);
+
+    cv::imshow("123", frame);
+    char key = cv::waitKey(1);
+
+    if (key == 27)
+    {
+      break;
+    }
+    shapes.clear();
+  }
+  cam.release();
+  cv::destroyAllWindows();
+}
+
 int main(int argc, char **argv)
 {
   frontal_face_detector detector = get_frontal_face_detector();
@@ -539,9 +679,9 @@ int main(int argc, char **argv)
       return 1;
     }
     if (command == "rec")
-      DMS_recognize(cam, detector, sp);
+      DMS_recognize(cam, detector, sp); // recognize
     else
-      DMS_registor(argv[1], cam, detector, sp);
+      DMS_registor(argv[1], cam, detector, sp); // registor
     // DMS_registor(detector, sp);
   }  
     

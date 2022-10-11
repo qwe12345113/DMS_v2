@@ -46,11 +46,11 @@ float eye_aspect_ratio(full_object_detection &shape)
 
 float mouth_aspect_ratio(full_object_detection &shape)
 {
-  float a = distanceCalculate(shape.part(50), shape.part(58));
-  float b = distanceCalculate(shape.part(51), shape.part(57));
-  float c = distanceCalculate(shape.part(52), shape.part(56));
-  float d = distanceCalculate(shape.part(48), shape.part(54));
-  // cout << "MAR: " << (a + b + c) / (3 * d) << endl;
+  float a = distanceCalculate(shape.part(61), shape.part(67));
+  float b = distanceCalculate(shape.part(62), shape.part(66));
+  float c = distanceCalculate(shape.part(63), shape.part(65));
+  float d = distanceCalculate(shape.part(60), shape.part(64));
+  
   return (a + b + c) / (3 * d);
 }
 
@@ -68,15 +68,15 @@ std::vector<float> threshold_calculate(std::vector<full_object_detection> &shape
   }
   
   threshold.push_back(mean(a, size));
-  threshold.push_back(mean(b, size));
+  threshold.push_back(mean(b, size)+0.5);
   threshold.push_back(mean(c, size));
   threshold.push_back(mean(d, size));
 
-  threshold.push_back(stddev(a, size));
-  threshold.push_back(stddev(b, size));
-  threshold.push_back(stddev(c, size));
-  threshold.push_back(stddev(d, size));
-
+  // threshold.push_back(stddev(a, size));
+  // threshold.push_back(stddev(b, size));
+  // threshold.push_back(stddev(c, size));
+  // threshold.push_back(stddev(d, size));
+  cout << mean(b, size) << endl;
   cout << "EYE_AR_THRESH " << threshold.at(0) <<endl;
   cout << "MOUTH_AR_THRESH " << threshold.at(1) <<endl;
   cout << "HEAD_X_THRESH " << threshold.at(2) <<endl;

@@ -87,17 +87,18 @@ private:
         
         cv::Rect roi(min_x, min_y, max_x-min_x, max_y-min_y);
         cv::Mat eye_roi = frame(roi);
-        string s = "./" + to_string(left_corner_keypoint_num) + ".jpg";
-        cv::imwrite(s, eye_roi);
+        // string s = "./" + to_string(left_corner_keypoint_num) + ".jpg";
+        // cv::imwrite(s, eye_roi);
         return eye_roi;
     }
 
     float get_gaze(Mat &eye_roi)
-    {        
+    {   
         float gaze_score = 0;
         cv::Scalar color(255, 255, 255);
         cv::Point eye_center((int)(eye_roi.cols / 2), (int)(eye_roi.rows / 2));
-        // cv::bilateralFilter(eye_roi, eye_roi, 4, 40, 40);
+        
+        // cv::bilateralFilter(inframe, eye_roi, 4, 40, 40);
 
         std::vector<Vec3f> circles;
         cv::HoughCircles(eye_roi, circles, cv::HOUGH_GRADIENT, 1, 10, 90, 6, 1, 9);
