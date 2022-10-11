@@ -62,6 +62,11 @@ $ ./dms user_name
 ```bash
 $ ./dms rec
 ```
+## Demo
+
+
+https://user-images.githubusercontent.com/11375811/195013024-d6e1a8ff-211d-40e0-93b6-3ed299b036d2.mp4
+
 
 
 # Reference
