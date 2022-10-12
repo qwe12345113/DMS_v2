@@ -12,19 +12,24 @@
 using namespace dlib;
 using namespace std;
 using namespace cv;
+/*---------------------------------------------------------------------------------------- */
 
-//  ----------------------------------------------------------------------------------------
-// #define EYE_AR_THRESH 0.25
-// #define MOUTH_AR_THRESH 0.6
-#define HEAD_X_THRESH 50
-#define HEAD_Y_THRESH 35
-#define YAWN_FRAME 15
-#define EYE_AR_SLEEP_FRAME 10
-#define LOWER_HEAD_FRAME 15
-#define TURN_AROUND_FRAME 15
+#define INPUT_COL 640
+#define INPUT_ROW 360
+
+#define ROI_Xl 0
+#define ROI_Xm (INPUT_COL/4)
+#define ROI_Xr (INPUT_COL/2)
+#define ROI_Y 0
+
+#define ROI_COL (INPUT_COL/2)
+#define ROI_ROW (INPUT_ROW)
+
 #define LAG 30
 
-void DMS_pic(string img_path, frontal_face_detector detector, shape_predictor sp)
+/*---------------------------------------------------------------------------------------- */
+
+void landmark_test(string img_path, frontal_face_detector detector, shape_predictor sp)
 {
   cout << "read picture " << endl;
   // clock_t start = clock();
@@ -44,168 +49,6 @@ void DMS_pic(string img_path, frontal_face_detector detector, shape_predictor sp
   auto sec_float = chrono::duration<float>(elasped); 
   cout << sec_float.count() << endl;
   // cout << ((double)(clock() - start)) * 1000 / CLOCKS_PER_SEC << endl;
-}
-
-void DMS_video(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
-{
-  cout << "read video " << endl;
-  cv::Mat frame;
-  cv::Scalar color(0, 0, 255);
-
-  int colse_eye_frame = 0, yawn_frame = 0, lower_head_frame = 0, trun_around_frame = 0, lag = 0;
-  bool yawn = false, find_normal_satus_OK = 0;
-  float eye_ear = 0, mouth_ear = 0;
-  std::vector<full_object_detection> shapes, tmp_shapes;
-  std::vector<float> threshold;
-
-  /// start to capture frames from camera or video ///
-  while (cam.read(frame))
-  {
-    // clock_t start = clock();
-    cv::resize(frame, frame, cv::Size(640, 360));
-
-    cv::Mat gray;
-    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-
-    // if the img is gray scale concat image
-    // three time to simulate the color image
-    if (frame.channels() == 1)
-      cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);
-
-    //------------ opencv format to dlib format ---------------//
-    array2d<rgb_pixel> img;
-    assign_image(img, cv_image<bgr_pixel>(frame));
-
-    //----- Number of faces detected -----//
-    std::vector<dlib::rectangle> dets = detector(img);
-
-    if (dets.size() == 1)
-    {
-      full_object_detection landmarks = sp(img, dets[0]); // get face landmark
-      eye_ear = eye_aspect_ratio(landmarks);
-      mouth_ear = mouth_aspect_ratio(landmarks);
-      shapes.push_back(landmarks);
-      // start detect
-      if (shapes.size() == 1)
-      {
-        if (find_normal_satus_OK)
-        {
-          //--------- detect close eye -------------//
-          if (eye_ear < threshold.at(0))
-          {
-            colse_eye_frame++;
-            if (EYE_AR_SLEEP_FRAME < colse_eye_frame)
-            {
-              string s_ce = "Warning: Close Eye";
-              cout << s_ce << endl;
-              cv::putText(frame, s_ce, Point(0, 60), FONT_HERSHEY_SIMPLEX, 1, color, 2);
-            }
-          }
-          else
-          {
-            colse_eye_frame = 0;
-          }
-
-          //--------------- detect yawn ----------------//
-          if (mouth_ear > threshold.at(1))
-          {
-            yawn_frame++;
-            if (yawn_frame > YAWN_FRAME)
-            {
-              yawn = true;
-              if (yawn)
-              {
-                string s_y = "Warning: Yawn";
-                cout << s_y << endl;
-                cv::putText(frame, s_y, Point(0, 90), FONT_HERSHEY_SIMPLEX, 1, color, 2);
-                yawn = false;
-                yawn_frame = 0;
-              }
-            }
-          }
-          else
-          {
-            yawn_frame = 0;
-          }
-
-          //---------- Distraction (lower head) --------------//
-          if (shapes.at(0).part(30).y() - threshold.at(3) > HEAD_Y_THRESH)
-          {
-            lower_head_frame++;
-            if (lower_head_frame > LOWER_HEAD_FRAME)
-            {
-              string s_lh = "Warning: Lower head";
-              cout << s_lh << endl;
-              cv::putText(frame, s_lh, Point(0, 120), FONT_HERSHEY_SIMPLEX, 1, color, 2);
-            }
-          }
-          else
-          {
-            lower_head_frame = 0;
-          }
-
-          //------------- Distraction (turn around head) -----------//
-          if (abs(shapes.at(0).part(30).x() - threshold.at(2)) > HEAD_X_THRESH)
-          {
-            trun_around_frame++;
-            if (trun_around_frame > TURN_AROUND_FRAME)
-            {
-              string s_d = "Warning: Distraction";
-              cout << s_d << endl;
-              cv::putText(frame, s_d, Point(0, 150), FONT_HERSHEY_SIMPLEX, 1, color, 2);
-            }
-          }
-          else
-          {
-            trun_around_frame = 0;
-          }
-          // shapes.clear();
-        }
-
-        else
-        {
-          cout << "normal status calculating" << endl;
-          if (lag > LAG)
-          {
-            threshold = threshold_calculate(tmp_shapes);
-            cout << "find normal status finish" << endl;
-            find_normal_satus_OK = true;
-            tmp_shapes.clear();
-          }
-          else
-          {
-            tmp_shapes.push_back(shapes.at(0));
-            lag++;
-          }
-        }
-      }
-    }
-    // cout << ((double)(clock() - start)) * 1000 / CLOCKS_PER_SEC << " S" << endl;
-
-    //---------opencv show --------------//
-    // cv::Mat out = dlib::toMat(img);
-    // cv::cvtColor(out,out, cv::COLOR_RGB2BGR);
-    // std::vector<cv::Point2f> landmark;
-    // for(int i = 0; i < shapes.at(0).num_parts(); i++)
-    // {
-    //   landmark.push_back(cv::Point2d(shapes.at(0).part(i).x(), shapes.at(0).part(i).y()));
-    // }
-    // drawLandmarks(out, landmark);
-    cv::imshow("123", frame);
-    char key = cv::waitKey(1);
-
-    if (key == 27)
-      break;
-
-    //-------- dlib show ---------//
-    // win.clear_overlay();
-    // win.set_image(img);
-    // win.add_overlay(render_face_detections(shapes));
-
-    shapes.clear();
-  }
-  cam.release();
-  cv::destroyAllWindows();
 }
 
 void DMS_registor(string user_name, cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
@@ -331,170 +174,9 @@ void DMS_recognize(cv::VideoCapture cam, frontal_face_detector detector, shape_p
   cv::destroyAllWindows();
 }
 
-void DMS_old(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
-{
-  cv::Mat frame;
-  cv::Scalar color(0, 0, 255);
-
-  int colse_eye_frame = 0, yawn_frame = 0, lower_head_frame = 0, trun_around_frame = 0, lag = 0;
-  bool yawn = false, find_normal_satus_OK = 0;
-  float eye_ear = 0, mouth_ear = 0;
-  std::vector<full_object_detection> shapes, tmp_shapes;
-  std::vector<float> threshold;
-
-  cv::VideoWriter writer;
-  writer.open("./demo.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 15.0, cv::Size(640, 360), true);
-  EyeDetector Eye_det;
-
-  cout << "Press Enter to take a photo to recgonize driver" << endl;
-
-  /// start to capture frames from camera or video ///
-  while (cam.read(frame))
-  {
-    // clock_t start = clock();
-    cv::resize(frame, frame, cv::Size(640, 360));
-
-    cv::Mat gray;
-    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-
-    // if the img is gray scale concat image
-    // three time to simulate the color image
-    if (frame.channels() == 1)
-      cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);
-
-    //------------ opencv format to dlib format ---------------//
-    array2d<rgb_pixel> img;
-    assign_image(img, cv_image<bgr_pixel>(frame));
-
-    //----- Number of faces detected -----//
-    std::vector<dlib::rectangle> dets = detector(img);
-
-    if (dets.size() == 1)
-    {
-
-      full_object_detection landmarks = sp(img, dets[0]); // get face landmark
-      eye_ear = eye_aspect_ratio(landmarks);
-      mouth_ear = mouth_aspect_ratio(landmarks);
-      shapes.push_back(landmarks);
-      // start detect
-      if (shapes.size() == 1)
-      {
-        if (find_normal_satus_OK)
-        {
-
-          //--------- detect close eye -------------//
-          // cout << (eye_ear-threshold.at(0))/threshold.at(4) << endl;
-          // cout << eye_ear << endl;
-          // cout << Eye_det.get_EAR(gray, landmarks) << endl;
-          
-          if (eye_ear < threshold.at(0))
-          {
-            colse_eye_frame++;
-            if (EYE_AR_SLEEP_FRAME < colse_eye_frame)
-            {
-              string s_ce = "Warning: Close Eye";
-              cout << s_ce << endl;
-              cv::putText(frame, s_ce, Point(0, 60), FONT_HERSHEY_SIMPLEX, 1, color, 2);
-            }
-          }
-          else
-          {
-            colse_eye_frame = 0;
-          }
-
-          //--------------- detect yawn ----------------//
-          if (mouth_ear > threshold.at(1))
-          {
-            yawn_frame++;
-            if (yawn_frame > YAWN_FRAME)
-            {
-              yawn = true;
-              if (yawn)
-              {
-                string s_y = "Warning: Yawn";
-                cout << s_y << endl;
-                cv::putText(frame, s_y, Point(0, 90), FONT_HERSHEY_SIMPLEX, 1, color, 2);
-                yawn = false;
-                yawn_frame = 0;
-              }
-            }
-          }
-          else
-          {
-            yawn_frame = 0;
-          }
-
-          //---------- Distraction (lower head) --------------//
-          if (shapes.at(0).part(30).y() - threshold.at(3) > HEAD_Y_THRESH)
-          {
-            lower_head_frame++;
-            if (lower_head_frame > LOWER_HEAD_FRAME)
-            {
-              string s_lh = "Warning: Lower head";
-              cout << s_lh << endl;
-              cv::putText(frame, s_lh, Point(0, 120), FONT_HERSHEY_SIMPLEX, 1, color, 2);
-            }
-          }
-          else
-          {
-            lower_head_frame = 0;
-          }
-
-          //------------- Distraction (turn around head) -----------//
-          if (abs(shapes.at(0).part(30).x() - threshold.at(2)) > HEAD_X_THRESH)
-          {
-            trun_around_frame++;
-            if (trun_around_frame > TURN_AROUND_FRAME)
-            {
-              string s_d = "Warning: Distraction";
-              cout << s_d << endl;
-              cv::putText(frame, s_d, Point(0, 150), FONT_HERSHEY_SIMPLEX, 1, color, 2);
-            }
-          }
-          else
-          {
-            trun_around_frame = 0;
-          }
-          // shapes.clear();
-        }
-        else
-        {
-          cout << "normal status calculating" << endl;
-          if (lag > LAG)
-          {
-            threshold = threshold_calculate(tmp_shapes);
-            cout << "find normal status finish" << endl;
-            find_normal_satus_OK = true;
-            tmp_shapes.clear();
-          }
-          else
-          {
-            tmp_shapes.push_back(shapes.at(0));
-            lag++;
-          }
-        }
-      }
-    }
-    else if (dets.size() == 0)
-      cout << "no face" << endl;
-
-    writer.write(frame);
-    cv::imshow("123", frame);
-    char key = cv::waitKey(1);
-
-    if (key == 27)
-    {
-      break;
-    }
-    shapes.clear();
-  }
-  cam.release();
-  cv::destroyAllWindows();
-}
-
 void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
 {
-  cv::Mat frame;
+  cv::Mat input;
   cv::Scalar color(0, 0, 255);
 
   int lag = 0, fps_lim = 12;
@@ -506,7 +188,7 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
 
   cv::VideoWriter writer;
   if(record)  
-    writer.open("./demo.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 15.0, cv::Size(640, 360), true);
+    writer.open("./demo.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 15.0, cv::Size(INPUT_COL, INPUT_ROW), true);
   
   EyeDetector Eye_det;
   HeadPoseEstimator Head_pose;
@@ -517,11 +199,13 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
   string out="";
   float ear=0, m_ear=0, gaze=0, avg_pitch = 0;  
   
-  while (cam.read(frame))
+  while (cam.read(input))
   {
     // clock_t start(clock());
-    cv::resize(frame, frame, cv::Size(640, 360));
-    
+    cv::resize(input, input, cv::Size(INPUT_COL, INPUT_ROW));
+
+    cv::Rect myROI(ROI_Xm, ROI_Y, ROI_COL, ROI_ROW);
+    cv::Mat frame = input(myROI);
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
@@ -536,9 +220,10 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
 
     //----- Number of faces detected -----//
     std::vector<dlib::rectangle> dets = detector(img);
-
+    
     if (dets.size() == 1)
     {
+      
       full_object_detection landmarks = sp(img, dets[0]); // get face landmark
       
       shapes.push_back(landmarks);
@@ -570,8 +255,7 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
 
           Scorer.eval_scores(ear, m_ear, Head_pose.pitch, Head_pose.yaw, shapes.at(0).part(30).y());
 
-          if(Scorer.is_tired)
-            cv::putText(frame, "Tired !", Point(10, 280), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+          
           if(Scorer.is_asleep)
             cv::putText(frame, "CLOSE EYES !", Point(10, 300), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
           if(Scorer.is_yawn)
@@ -579,9 +263,9 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
           // if(Scorer.is_looking_away)
           //   cv::putText(frame, "LOOKING AWAY!", Point(400, 300), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
           if(Scorer.is_lower_head)
-            cv::putText(frame, "LOWER HEAD !", Point(400, 300), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+            cv::putText(frame, "LOWER HEAD !", Point(10, 340), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
           if(Scorer.is_distracted)
-            cv::putText(frame, "DISTRACTED !", Point(400, 320), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
+            cv::putText(frame, "DISTRACTED !", Point(10, 360), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 1);
 
         }
         else
@@ -611,7 +295,8 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
     }
     else if (dets.size() == 0){
       // cout << "no face" << endl;
-      cv::putText(frame, "No Face!", Point(200, 320), FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0,0,255), 2);
+      cv::putText(frame, "No Face!", Point(10, 320), FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0,0,255), 2);
+      
     }
     // double duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
     
@@ -638,28 +323,19 @@ int main(int argc, char **argv)
   frontal_face_detector detector = get_frontal_face_detector();
   shape_predictor sp;
   deserialize("../Model/shape_predictor_68_face_landmarks.dat") >> sp;
-
+  
+  /*  ./dms pic x.png    */
   if (argc == 3)
   {
     string command = argv[1];
     if (command == "pic") 
-      DMS_pic(argv[2], detector, sp);
-    
-    else if (command == "video")
-    {
-      cv::VideoCapture cam(argv[2]);
-      if (!cam.isOpened())
-      {
-        cout << "Could not open video or camera source\n";
-        return 1;
-      }
-      DMS_video(cam, detector, sp);
-    }
+      landmark_test(argv[2], detector, sp);
     else
       cout << "Wrong command" << endl;
   }
 
-  else if (argc == 2)
+  /*   ./dms rec || ./dms suer_name   */
+  else if (argc == 2) 
   {    
     string command = argv[1];
     cv::VideoCapture cam;
@@ -676,8 +352,8 @@ int main(int argc, char **argv)
     // DMS_registor(detector, sp);
   }  
     
-  
-  else if (argc == 1)
+  /*  ./dms   */
+  else if (argc == 1) 
   {   
     cout << "cam" << endl;
     cv::VideoCapture cam(0);
