@@ -1,19 +1,7 @@
 /*gettime6.c */
-#include <time.h>
-
+/*gettime6.c */
 #include <iostream>
-#include <dlib/image_processing/frontal_face_detector.h>
-#include <dlib/image_processing/render_face_detections.h>
-#include <dlib/image_processing.h>
-#include <dlib/opencv/cv_image.h>
-#include <dlib/opencv.h>
-
-#include <dlib/image_io.h>
 #include "cmath"
-#include <opencv2/opencv.hpp>
-
-
-using namespace cv;
 using namespace std;
 using namespace dlib;
 
@@ -141,7 +129,7 @@ public:
         // if((abs(head_pitch) > pitch_tresh) || (abs(head_yaw) > yaw_tresh)){
         
         // trun arround head
-        cout << abs(head_pitch-avg_pitch) << endl;
+        cout <<  abs(head_pitch-avg_pitch) << endl;
         if((abs(head_pitch-avg_pitch)> pitch_tresh)){
             if(!distracted)
                 pose_counter += 1;
@@ -150,7 +138,9 @@ public:
             pose_counter -= 1;
 
         // lower head
-        if(abs(head_yaw > yaw_tresh) && (head_y - head_basic) > 10){
+        // cout << head_y<< endl;
+        // if(abs(head_yaw > yaw_tresh) || (head_y - head_basic) > 50){
+        if((head_y - head_basic) > 45){
             if(!lower_head)
                 yaw_counter += 1;
         }

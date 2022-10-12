@@ -108,54 +108,28 @@ string checkFaceRecognition(string filename, string avoid)
     string bestAccount = "unknow";
     string bestPhoto = "unknow";
     float bestDistance = BEST_THRESHOLD;
-    int temp = 0;
-
+    struct timeval time_now;
+    gettimeofday(&time_now, NULL);
+    long milli_time_step1 = time_now.tv_sec * 1000 + time_now.tv_usec / 1000;
     // The first thing we are going to do is load all our models.  First, since we need to
     // find faces in the image we will need a face detector:
-    frontal_face_detector detector = get_frontal_face_detector();
+    /// frontal_face_detector detector = get_frontal_face_detector();
     // We will also use a face landmarking model to align faces to a standard pose:  (see face_landmark_detection_ex.cpp for an introduction)
-    shape_predictor sp;
-    deserialize("../Model/shape_predictor_5_face_landmarks.dat") >> sp;
+    /// shape_predictor sp;
+    /// deserialize("../shape_predictor_5_face_landmarks.dat") >> sp;
     // And finally we load the DNN responsible for face recognition.
     anet_type net;
     deserialize("../Model/dlib_face_recognition_resnet_model_v1.dat") >> net;
 
     matrix<rgb_pixel> img_source;
     load_image(img_source, filename);
-    // Display the raw image on the screen
-    // image_window win(img_source);
-
-    // Run the face detector on the image of our action heroes, and for each face extract a
-    // copy that has been normalized to 150x150 pixels in size and appropriately rotated and centered.
-    std::vector<matrix<rgb_pixel>> faces;
-    for (auto face : detector(img_source))
-    {
-        auto shape = sp(img_source, face);
-        matrix<rgb_pixel> face_chip;
-        extract_image_chip(img_source, get_face_chip_details(shape, 150, 0.25), face_chip);
-        faces.push_back(move(face_chip));
-        // Also put some boxes on the faces so we can see that the detector is finding them.
-        // win.add_overlay(face);
-    }
-    if (faces.size() == 0)
-    {
-        cout << "No faces found in image!" << endl;
-        bestAccount = "no faces";
-        return bestAccount;
-    }
-
-    // This call asks the DNN to convert each face image in faces into a 128D vector.
-    // In this 128D vector space, images from the same person will be close to each other
-    // but vectors from different people will be far apart.  So we can use these vectors to
-    // identify if a pair of images are from the same person or from different people.
-    matrix<float, 0, 1> face_source = net(faces[0]);
-
+    matrix<float, 0, 1> face_source = net(img_source);
     photoNames.clear();
     getDirLists(dirPath, photoNames);
     // cout << "DIR size " << photoNames.size() << endl;
     if (photoNames.size() > 0)
     {
-        for (int i = 0; i < (int)photoNames.size(); i++)
+        for (unsigned int i = 0; i < photoNames.size(); i++)
         {
             if ((strcmp(avoid.c_str(), "ALL_RECOGNITION") == 0) || (strcmp(photoNames[i].c_str(), avoid.c_str()) != 0))
             {
@@ -165,42 +139,27 @@ string checkFaceRecognition(string filename, string avoid)
                 // cout << "JPG file in "<< dirPath + "/" + photoNames[i] << " size " << photoLists.size() << endl;
                 if (photoLists.size() > 0)
                 {
-                    for (int j = 0; j < (int)photoLists.size(); j++)
+                    for (unsigned int j = 0; j < photoLists.size(); j++)
                     {
-                        temp++;
                         string accountPhoto = accountDir + "/" + photoLists[j];
                         matrix<rgb_pixel> img_rec;
                         load_image(img_rec, accountPhoto);
-
-                        std::vector<matrix<rgb_pixel>> faces_rec;
-                        for (auto face : detector(img_rec))
+                        matrix<float, 0, 1> face_rec = net(img_rec);
+                        auto distance = length(face_source - face_rec);
+                        if (distance < bestDistance && distance > 0)
                         {
-                            auto shape = sp(img_rec, face);
-                            matrix<rgb_pixel> face_chip;
-                            extract_image_chip(img_rec, get_face_chip_details(shape, 150, 0.25), face_chip);
-                            faces_rec.push_back(move(face_chip));
-                        }
-                        if (faces_rec.size() > 0)
-                        {
-                            matrix<float, 0, 1> face_rec = net(faces_rec[0]);
-                            auto distance = length(face_source - face_rec);
-                            // cout << "Photo " << accountPhoto << " distance " << distance << endl;
-                            if (distance < bestDistance && distance > 0)
-                            {
-                                bestAccount = photoNames[i];
-                                bestPhoto = photoLists[j];
-                                bestDistance = distance;
-                            }
-                        }
-                        else
-                        {
-                            // cout << "Photo " << accountPhoto << " face not find" << endl;
+                            bestAccount = photoNames[i];
+                            bestPhoto = photoLists[j];
+                            bestDistance = distance;
                         }
                     }
                 }
             }
         }
     }
-    //cout << "Face recognition account -> " << bestAccount << " ; photo -> " << bestPhoto << " ; distance -> " << bestDistance << "(" << temp << ")" << endl;
+    gettimeofday(&time_now, NULL);
+    long milli_time_step2 = time_now.tv_sec * 1000 + time_now.tv_usec / 1000;
+    // cout << "Face recognition account -> " << bestAccount << " ; photo -> " << bestPhoto << " ; distance -> " << bestDistance << endl;
+    // cout << "during " << milli_time_step2 - milli_time_step1 << " ms" << endl;
     return bestAccount;
 }

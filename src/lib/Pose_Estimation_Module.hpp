@@ -1,11 +1,4 @@
 #include <iostream>
-#include <dlib/image_processing/frontal_face_detector.h>
-#include <dlib/image_processing/render_face_detections.h>
-#include <dlib/image_processing.h>
-#include <dlib/opencv/cv_image.h>
-#include <dlib/opencv.h>
-
-#include <dlib/image_io.h>
 #include "cmath"
 #include <opencv2/opencv.hpp>
 
@@ -56,7 +49,7 @@ public:
 
         if (!rvec.empty() && !tvec.empty())
         {
-            cv::solvePnPRefineVVS(model_points, image_points, camera_matrix, dist_coeffs, rvec, tvec);
+           // cv::solvePnPRefineVVS(model_points, image_points, camera_matrix, dist_coeffs, rvec, tvec);
 
             std::vector<cv::Point2f> nose_end_point2D;
             cv::projectPoints(axis, rvec, tvec, camera_matrix, dist_coeffs, nose_end_point2D);
@@ -107,8 +100,7 @@ private:
         // roll = roll * 180 / M_PI;
         pitch = pitch1 * 180 / M_PI; // turn around head
         // yaw = yaw * 180 / M_PI;
-        // scout << pitch << endl; // 正面的基準在角度在10多 // need to moderfy
-        // cout << pitch << " " << (pitch * 180 / M_PI) << endl;
+        //cout << pitch << endl; // 正面的基準在角度在10多 // need to moderfy
     }
 
     void rotationMatrixToEulerAngles2(float R[3][3])
@@ -124,44 +116,8 @@ private:
         // float roll = asin(2.0 * (q0 * q2 + q1 * q3));
         // float pitch = atan2(2.0 * (q0 * q1 - q2 * q3), (q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3));
         yaw = atan2(2.0 * (q0 * q3 - q1 * q2), (q0 * q0 + q1 * q1 - q2 * q2 - q3 * q3)); // lower head
-
-        // cout << roll << endl; // lower head
-        // cout << "----" << endl;
         
     }
-
-    void rotationMatrixToEulerAngles3(cv::Mat rotation_vector)
-    {
-        double theta = cv::norm(rotation_vector, CV_L2);
-        double w = cos(theta / 2);
-        double x = sin(theta / 2) * rotation_vector.at<double>(0,0) / theta;
-        double y = sin(theta / 2) * rotation_vector.at<double>(0,1) / theta;
-        double z = sin(theta / 2) * rotation_vector.at<double>(0,2) / theta;
-
-        double ysqr = y*y;
-
-        // x-axis
-        double t0 = +2.0 * (w*x + y*z);
-        double t1 = +1.0 - 2.0 * (x*x + ysqr);
-        double pitch3 = atan2(t0, t1);
-
-        // y-axis
-        double t2 = +2.0 * (w*y - z*x);
-        t2 = t2 > 1.0 ? 1.0:t2;
-        t2 = t2 < -1.0 ? -1.0:t2;
-        double yaw3 = asin(t2);
-
-        // z-axis
-        double t3 = +2.0 * (w*z + x*y);
-        double t4 = +1.0 - 2.0 * (ysqr + z*z);
-        double roll3 = atan2(t3, t4);
-
-        cout << roll3 <<endl;
-
-    }
-    
- 
-
 
     void draw_pose_info(cv::Mat frame, cv::Point img_point, std::vector<cv::Point2f> point_proj)
     {

@@ -1,16 +1,7 @@
-#include <dlib/image_processing/frontal_face_detector.h>
-#include <dlib/image_processing/render_face_detections.h>
-#include <dlib/image_processing.h>
-#include <dlib/opencv/cv_image.h>
-#include <dlib/opencv.h>
-#include <dlib/image_io.h>
-#include <bits/stdc++.h>
 #include <iostream>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <ctime>
+#include <chrono>
 #include <opencv2/opencv.hpp>
-#include "lib/drawLandmarks.hpp"
 #include "lib/utils_math.hpp"
 #include "lib/Eye_Dector_Module.hpp"
 #include "lib/Yawn_Dector_Module.hpp"
@@ -20,8 +11,8 @@
 
 using namespace dlib;
 using namespace std;
-// using namespace config;
-//  using namespace cv;
+using namespace cv;
+
 //  ----------------------------------------------------------------------------------------
 // #define EYE_AR_THRESH 0.25
 // #define MOUTH_AR_THRESH 0.6
@@ -36,8 +27,8 @@ using namespace std;
 void DMS_pic(string img_path, frontal_face_detector detector, shape_predictor sp)
 {
   cout << "read picture " << endl;
-  image_window win;
-  clock_t start = clock();
+  // clock_t start = clock();
+  auto start = chrono::steady_clock::now();
   cv::Mat frame = cv::imread(img_path.c_str());
   array2d<rgb_pixel> img;
   assign_image(img, cv_image<bgr_pixel>(frame));
@@ -49,12 +40,10 @@ void DMS_pic(string img_path, frontal_face_detector detector, shape_predictor sp
   shapes = process(img, sp, detector);
   cout << eye_aspect_ratio(shapes.at(0)) << endl;
 
-  cout << ((double)(clock() - start)) * 1000 / CLOCKS_PER_SEC << endl;
-  // Now let's view our face poses on the screen.
-  win.clear_overlay();
-  win.set_image(img);
-  win.add_overlay(render_face_detections(shapes));
-  win.wait_until_closed();
+  auto elasped = chrono::steady_clock::now() - start;
+  auto sec_float = chrono::duration<float>(elasped); 
+  cout << sec_float.count() << endl;
+  // cout << ((double)(clock() - start)) * 1000 / CLOCKS_PER_SEC << endl;
 }
 
 void DMS_video(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
@@ -503,16 +492,14 @@ void DMS_old(cv::VideoCapture cam, frontal_face_detector detector, shape_predict
   cv::destroyAllWindows();
 }
 
-
 void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor sp)
 {
   cv::Mat frame;
   cv::Scalar color(0, 0, 255);
 
-  int lag = 0, fps_lim = 11;
-  float avg_pitch = 0;
+  int lag = 0, fps_lim = 12;
   // float time_lim = 1. / fps_lim ;
-  bool find_normal_satus_OK = 0, record=false, show_detail=true;
+  bool find_normal_satus_OK = false, record=true, show_detail=false;
 
   std::vector<full_object_detection> shapes, tmp_shapes;
   std::vector<float> threshold;
@@ -528,12 +515,13 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
   // Scorer.init(fps_lim, 0.26, 2, 0.2, 2, 35, 28, 2.5);
   
   string out="";
-  float ear=0, m_ear=0, gaze=0;
-
+  float ear=0, m_ear=0, gaze=0, avg_pitch = 0;  
+  
   while (cam.read(frame))
   {
+    // clock_t start(clock());
     cv::resize(frame, frame, cv::Size(640, 360));
-
+    
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
@@ -607,8 +595,9 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
             cout << "calculate finish" << endl;
             find_normal_satus_OK = true;
             tmp_shapes.clear();
-            Scorer.init(fps_lim, threshold.at(0), 3, 0.2, 3, 27, 0.1, 2.5, threshold.at(1), 2, 1.5, threshold.at(3), avg_pitch);
+            Scorer.init(fps_lim, threshold.at(0), 3, 0.2, 3, 28, 0.1, 2.5, threshold.at(1), 2, 1, threshold.at(3), avg_pitch);
             Head_pose.pitch = 0; // init pitch
+            
           }
           else
           {
@@ -624,11 +613,14 @@ void DMS(cv::VideoCapture cam, frontal_face_detector detector, shape_predictor s
       // cout << "no face" << endl;
       cv::putText(frame, "No Face!", Point(200, 320), FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0,0,255), 2);
     }
-
+    // double duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+    
+    
     if(record)
       writer.write(frame);
 
     cv::imshow("123", frame);
+    // cout << duration << endl;
     char key = cv::waitKey(1);
 
     if (key == 27)

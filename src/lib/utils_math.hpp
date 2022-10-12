@@ -1,16 +1,11 @@
 #include <dlib/image_processing/frontal_face_detector.h>
 #include <dlib/image_processing/render_face_detections.h>
 #include <dlib/image_processing.h>
-#include <dlib/opencv/cv_image.h>
-#include <dlib/opencv.h>
-
-#include <dlib/image_io.h>
 #include <iostream>
-#include <opencv2/opencv.hpp>
 
-using namespace cv; 
 using namespace dlib;
 using namespace std;
+
 
 float stddev(float data[], int len);
 float mean(float data[], int len);
@@ -67,7 +62,7 @@ std::vector<float> threshold_calculate(std::vector<full_object_detection> &shape
     d[i] = shapes.at(i).part(30).y();    
   }
   
-  threshold.push_back(mean(a, size));
+  threshold.push_back(mean(a, size)-0.03);
   threshold.push_back(mean(b, size)+0.5);
   threshold.push_back(mean(c, size));
   threshold.push_back(mean(d, size));
