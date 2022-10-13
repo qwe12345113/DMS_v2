@@ -84,4 +84,6 @@ https://user-images.githubusercontent.com/11375811/195013024-d6e1a8ff-211d-40e0-
 
 [7] Real-Time Eye Blink Detection using Facial Landmarks：<http://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf>
 
-[8] head pose estimattion：<https://blog.csdn.net/cdknight_happy/article/details/79975060>
+[8] Head Pose Estimattion：<https://blog.csdn.net/cdknight_happy/article/details/79975060>
+
+[9] OpenCV Head Pose computation overview：<https://docs.opencv.org/4.x/d5/d1f/calib3d_solvePnP.html>
