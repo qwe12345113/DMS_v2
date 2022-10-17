@@ -1,4 +1,4 @@
-# DMS_v2
+# DMS_v3
 ## Introdution
 This project edit from [DMS_v2](https://github.com/qwe12345113/DMS_v2). We combine the **registor** and **face recognition** function into dms function. 
 
