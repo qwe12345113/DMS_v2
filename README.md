@@ -19,7 +19,7 @@ We use the face landmarks to detect the 4 of driving behaviors, including **yawn
 Might work under others, but didn't get to test any other OSs just yet.
 
 ## Preparing
-1. Download [dlib](http://dlib.net/) and the following model：
+1. Download [Dlib](http://dlib.net/) and the following model：
     - [face_recognition_resnet_model](https://github.com/davisking/dlib-models/blob/master/dlib_face_recognition_resnet_model_v1.dat.bz2)
     - [68-Dlib's point model](https://github.com/davisking/dlib-models/blob/master/shape_predictor_68_face_landmarks.dat.bz2)
     - [5-Dlib's point model](https://github.com/davisking/dlib-models/blob/master/shape_predictor_5_face_landmarks.dat.bz2)
