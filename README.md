@@ -47,7 +47,7 @@ DMS_v3
 $ ./dms
 ```
 
-When start the application, type "reg username" and "rec" to do registor and recognition fuction.
+When start the application, type "reg username" and "rec" in terminal to do registor and recognition fuction.
 
 
 # Reference
